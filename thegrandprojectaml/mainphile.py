@@ -9,8 +9,9 @@ class User:
     def __init__(self, id, username):
         self.id = id
         self.username = username
-        self.creating_a_pet = False
-        self.pets = []
+        self.countofpets = 0
+        self.classes = {}
+        self.names = {}
 
 class Pets:
     def __init__(self, name):
@@ -39,6 +40,7 @@ def reguser(message):
     out_text = 'Успешно!'
     bot.send_message(message.chat.id, out_text, parse_mode='html')
 
+globaltest = True
 
 @bot.message_handler(commands=['info'])
 def reguser(message):
@@ -47,15 +49,23 @@ def reguser(message):
 
 @bot.message_handler(commands=['createapet'])
 def create_a_pet(message):
-    out_text = 'Придумайте имя своему питомцу'
-    users[message.from_user.id.creating_a_pet] = True
-    bot.send_message(message.chat.id, out_text, parse_mode='html')
+    globaltest = True
+    return globaltest
+
 
 @bot.message_handler(content_types=['text'])
-def start_game(message):
-    if message.from_user.id.creating_a_pet == True:
-        out_text = mainatlast.naming(message, users[message.from_user.id])
-
-
-    bot.send_message(message.chat.id, out_text, parse_mode='html')
+def mainmanager(message):
+    phase = 0
+    while globaltest:
+        if phase == 0:
+            out_text = mainatlast.naming(message, users[message.from_user.id], phase)
+            bot.send_message(message.chat.id, out_text, parse_mode='html')
+        if phase == 1:
+            out_text = mainatlast.naming(message, users[message.from_user.id], phase)
+            bot.send_message(message.chat.id, out_text, parse_mode='html')
+            phase += 1
+        if phase == 2:
+            out_text = mainatlast.naming(message, users[message.from_user.id], phase)
+            bot.send_message(message.chat.id, out_text, parse_mode='html')
+            phase += 1
 bot.polling(non_stop=True, interval=0)
