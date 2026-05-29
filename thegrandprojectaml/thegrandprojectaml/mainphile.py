@@ -37,13 +37,14 @@ class Pets:
         self.lasteating = time.time()
     
     def update_score(self):
-        self.score = (self.iq * 3 + self.will * 2 - self.hunger * 10 + self.lucky * 2)/(50*(2/self.health))
+        self.score = (self.iq * 3 + self.will * 2 - self.hunger * 5 + self.lucky * 2)/(50*(2/self.health))
         return self.score
     
-    def scorechecker(self, user):
+    def scorechecker(self, user, cp):
         if self.score < 1:
             ot = 'Вы не смогли усмотреть за вашим питомцем. Его забрали в приют. Попробуйте снова'
-            del user.pets.self
+            del user.pets[cp]
+            user.countofpets -= 1
             return ot
 
     def willminuser(self):
@@ -56,9 +57,11 @@ class Pets:
             willminus = -1
             if self.will < 0:
                 willminus = 0
-                self.timeofcreation += bfrzero * 60
                 if bfrzero > 0 and bfrzero - (int(nowtime - self.timeofcreation) // 60) <= 0:
                     self.will += 1
+            self.timeofcreation += bfrzero * 60
+        print(self.will)
+        print(self.willcount)
         return willminus
     
     def hungerpluser(self):
@@ -123,7 +126,7 @@ def start_message(message):
 def reguser(message):
     users[message.from_user.id] = User(id=message.from_user.id, username = message.from_user.username)
     bot.delete_my_commands(scope=telebot.types.BotCommandScopeChat(message.chat.id))
-    out_text = 'Успешно!'
+    out_text = 'Успешно! Напишите /info для списка комманд'
     bot.send_message(message.chat.id, out_text, parse_mode='html')
 
 
@@ -156,6 +159,7 @@ def finalofnaming(message, classs):
 @userchecker
 def mypets(message):
     out_text = f'Всего у вас {users[message.from_user.id].countofpets} питомцев: {users[message.from_user.id].writepets()}'
+
     bot.send_message(message.chat.id, out_text, parse_mode='html')
 
 
@@ -243,8 +247,9 @@ def upgradeiqpart4(message, trve, chosenpet):
         bot.send_message(message.chat.id, out_text, parse_mode='html')
         users[message.from_user.id].pets[chosenpet].iq += 0.01
     users[message.from_user.id].pets[chosenpet].update_score()
-    if users[message.from_user.id].pets[chosenpet].scorechecker(users[message.from_user.id]):
-        bot.send_message(message.chat.id, users[message.from_user.id].pets[chosenpet].scorechecker(users[message.from_user.id]), parse_mode='html', reply_markup=telebot.types.ReplyKeyboardRemove())
+    nnn = users[message.from_user.id].pets[chosenpet].scorechecker(users[message.from_user.id], chosenpet)
+    if nnn:
+        bot.send_message(message.chat.id, nnn, parse_mode='html', reply_markup=telebot.types.ReplyKeyboardRemove())
 
 
 
@@ -307,9 +312,9 @@ def eatpet4(message, chosenpet):
             out_text = 'Питомец сытно попил, его усталость уменьшена'
     bot.send_message(message.chat.id, out_text, parse_mode='html', reply_markup=telebot.types.ReplyKeyboardRemove())
     users[message.from_user.id].pets[chosenpet].update_score()
-    if users[message.from_user.id].pets[chosenpet].scorechecker(users[message.from_user.id]):
-        bot.send_message(message.chat.id, users[message.from_user.id].pets[chosenpet].scorechecker(users[message.from_user.id]), parse_mode='html', reply_markup=telebot.types.ReplyKeyboardRemove())
-
+    nnn = users[message.from_user.id].pets[chosenpet].scorechecker(users[message.from_user.id], chosenpet)
+    if nnn:
+        bot.send_message(message.chat.id, nnn, parse_mode='html', reply_markup=telebot.types.ReplyKeyboardRemove())
 
 
 
@@ -334,8 +339,10 @@ def luckysecond(message):
         out_text = f'Выбран питомец {petname}'
         bot.send_message(message.chat.id, out_text, parse_mode='html')
         trvenum = random.randint(0, 100)
+        print(trvenum)
         bot.send_message(message.chat.id, 'Угадайте число от одного до 100', parse_mode='html')
         bot.register_next_step_handler(message, getluck2, trvenum, chosenpet)
+    
     else:
         out_text = 'Такого питомца у вас нет. Но вы всегда можете создать его!'
         bot.send_message(message.chat.id, out_text, parse_mode='html')
@@ -359,12 +366,13 @@ def getluck2(message, trvnum, chosenpet):
                 out_text = 'Чуть-чуть побольше'
             elif usern_number == trvnum:
                 out_text = 'Верно!'
-                chosenpet.lucky += 1
+                users[message.from_user.id].pets[chosenpet].lucky += 1
         else:
             out_text = 'Не угадали, попробуйте еще'
         bot.send_message(message.chat.id, out_text, parse_mode='html')
     users[message.from_user.id].pets[chosenpet].update_score()
-    if users[message.from_user.id].pets[chosenpet].scorechecker(users[message.from_user.id]):
-        bot.send_message(message.chat.id, users[message.from_user.id].pets[chosenpet].scorechecker(users[message.from_user.id]), parse_mode='html', reply_markup=telebot.types.ReplyKeyboardRemove())
+    nnn = users[message.from_user.id].pets[chosenpet].scorechecker(users[message.from_user.id], chosenpet)
+    if nnn:
+        bot.send_message(message.chat.id, nnn, parse_mode='html', reply_markup=telebot.types.ReplyKeyboardRemove())
 
 bot.polling(non_stop=True, interval=0)
